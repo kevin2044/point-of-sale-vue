@@ -1,5 +1,23 @@
 <script setup>
+import { reactive } from 'vue';
 import Link from '../../components/Link.vue'
+import useImage from '../../composables/useImage'
+import { useProductsStore } from '../../stores/products'
+
+const { url, onFileChange, isImageUploaded } = useImage()
+const products = useProductsStore()
+
+const formData = reactive({
+    name: '',
+    category: '',
+    price: '',
+    availability: '',
+    image: ''
+})
+
+const submitHandler = (data) => {
+    console.log(data)
+}
 </script>
 
 <template>
@@ -15,6 +33,9 @@ import Link from '../../components/Link.vue'
                 <FormKit
                     type="form"
                     submit-label="Agregar Producto"
+                    incomplete-message="No se pudo enviar, revisa los mensajes"
+                    @submit="submitHandler"
+                    :value="formData"
                 >
                     <FormKit 
                         type="text"
@@ -23,6 +44,7 @@ import Link from '../../components/Link.vue'
                         placeholder="Nombre del producto"
                         validation="required"
                         :validation-messages="{required: 'El nombre del producto es Obligatorio'}"
+                        v-model.trim="formData.name"
                     />
                     <FormKit 
                         type="file"
@@ -33,14 +55,25 @@ import Link from '../../components/Link.vue'
                         accept=".jpg"
                         multiple="false"
                         :validation-messages="{required: 'La imagen del producto es Obligatorio'}"
+                        @change="onFileChange"
+                        v-model.trim="formData.image"
                     />
+                    <div v-if="isImageUploaded">
+                        <p class="font-black">Imagen Producto:</p>
+                        <img 
+                            :src="isImageUploaded" 
+                            alt="Nueva Imagen Producto"
+                            class="w-32"
+                        />
+                    </div>
                     <FormKit 
                         type="select"
                         label="Categoria"
                         name="category"
                         validation="required"
                         :validation-messages="{required: 'La categoria del producto es Obligatorio'}"
-                        :options="[1,2,3]"
+                        :options="products.categoryOptions"
+                        v-model.number="formData.category"
                     />
                     <FormKit 
                         type="number"
@@ -51,6 +84,7 @@ import Link from '../../components/Link.vue'
                         min="1"
                         step="1"
                         :validation-messages="{required: 'El precio del producto es Obligatorio'}"
+                        v-model.number="formData.price"
                     />
                     <FormKit 
                         type="number"
@@ -61,6 +95,7 @@ import Link from '../../components/Link.vue'
                         min="1"
                         step="1"
                         :validation-messages="{required: 'La cantidad del producto es Obligatorio'}"
+                        v-model.number="formData.availability"
                     />
             
                 </FormKit>
